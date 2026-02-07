@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edius Official Certificate System | Studio Line India</title>
+    <link rel="icon" type="image/png" href="https://img.icons8.com/?size=100&id=9EvNKrEmIZRI&format=png&color=000000">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #d4af37;
+            --dark-gold: #996515;
+            --deep-red: #800000;
+            --soft-bg: #fdfdfd;
+        }
+
+        /* ক্যালেন্ডার আইকন */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        body {
+            background-color: #0f172a;
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #eee;
+        }
+
+        .admin-panel {
+            max-width: 1000px;
+            margin: 0 auto 30px;
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid var(--gold);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+        }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn {
+            flex: 1; padding: 15px; border: none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
+        }
+        .btn-gen { background: var(--gold); color: #000; }
+        .btn-dl { background: #fff; color: #000; display: none; }
+
+        /* সার্টিফিকেট ক্যানভাস ফিক্সড মাপ */
+        #cert-canvas {
+            width: 1000px;
+            height: 700px;
+            background: var(--soft-bg);
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+            color: #111;
+        }
+
+        .corner-ribbon {
+            position: absolute; width: 350px; height: 45px;
+            background: linear-gradient(45deg, var(--dark-gold), var(--gold), var(--dark-gold));
+            z-index: 5;
+        }
+        .top-left { top: 40px; left: -100px; transform: rotate(-45deg); }
+        .bottom-right { bottom: 40px; right: -100px; transform: rotate(-45deg); }
+
+        .outer-border { position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px; border: 2px solid var(--gold); z-index: 1; }
+        .inner-border { position: absolute; top: 30px; left: 30px; right: 30px; bottom: 30px; border: 1px solid var(--gold); z-index: 1; }
+
+        .content-box {
+            position: relative; z-index: 10; height: 100%; 
+            padding: 40px 80px; /* প্যাডিং কমানো হয়েছে যাতে কন্টেন্ট নিচে না নামে */
+            display: flex; flex-direction: column; align-items: center; 
+            text-align: center; box-sizing: border-box;
+        }
+
+        .header-section { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .edius-brand { height: 65px; object-fit: contain; } 
+        .studio-brand { font-family: 'Cinzel', serif; font-size: 24px; color: var(--deep-red); font-weight: 700; }
+
+        .title-main { font-family: 'Cinzel', serif; font-size: 55px; margin: 5px 0; letter-spacing: 5px; color: #000; }
+        .title-sub { font-size: 14px; letter-spacing: 6px; text-transform: uppercase; color: var(--dark-gold); margin-bottom: 10px; font-weight: 600; }
+
+        .name-display {
+            font-family: 'Great Vibes', cursive; font-size: 60px; color: var(--deep-red);
+            margin: 5px 0; padding: 0 40px; border-bottom: 1.5px solid var(--gold); display: inline-block;
+        }
+
+        .description-text { font-size: 15px; line-height: 1.6; max-width: 750px; color: #333; margin: 15px 0; }
+
+        .user-seal-wrapper {
+            display: flex; flex-direction: column; align-items: center; margin: 5px 0;
+        }
+        #display-user-logo { width: 90px; height: 90px; object-fit: contain; }
+        .seal-label {
+            font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px;
+            color: #000; margin-top: 5px; letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .footer-meta-container {
+            width: 100%; display: flex; justify-content: space-between;
+            margin-top: auto; padding-bottom: 20px; border-top: 1px solid #ddd;
+            padding-top: 15px; text-align: left; font-size: 12px;
+        }
+        .meta-box b { color: var(--deep-red); text-transform: uppercase; font-size: 11px; }
+
+        .db-wrap { max-width: 1000px; margin: 40px auto; background: #1e293b; padding: 20px; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; color: #ccc; }
+        th { text-align: left; color: var(--gold); border-bottom: 2px solid #334155; padding: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #334155; }
+    </style>
+</head>
+<body>
+
+<div class="admin-panel">
+    <h2 style="color:var(--gold); margin-top:0; font-family:'Cinzel'; text-align: center;">ADMIN STUDIO LINE INDIA | EDIUS CERTIFICATE </h2>
+    <div class="input-grid">
+        <input type="text" id="inName" placeholder="Full Name">
+        <input type="text" id="inContact" placeholder="Contact No">
+        <select id="inIDType">
+            <option value="Aadhaar Card">Aadhaar Card</option>
+            <option value="Voter ID">Voter ID</option>
+            <option value="PAN Card">PAN Card</option>
+        </select>
+        <select id="edVer">
+            <option value="EDIUS 11 Pro Personal for India">EDIUS 11 Pro Personal for India</option>
+            <option value="EDIUS 11 Pro Jump Upgrade">EDIUS 11 Pro Jump Upgrade</option>
+            <option value="EDIUS X Pro Personal">EDIUS X Pro Personal</option>
+        </select>
+        <input type="text" id="inKey" placeholder="Serial Key">
+        <input type="date" id="inDate">
+        <div style="color: var(--gold); font-size: 12px;">
+            <span>UPLOAD LOGO:</span>
+            <input type="file" id="logoUpload" accept="image/*" onchange="previewLogo(event)">
+        </div>
+    </div>
+    <div class="btn-group">
+        <button class="btn btn-gen" onclick="makeCert()">Generate & Save Online</button>
+        <button id="dlBtn" class="btn btn-dl" onclick="savePDF()">Download Official PDF</button>
+    </div>
+</div>
+
+<div id="cert-canvas">
+    <div class="corner-ribbon top-left"></div>
+    <div class="corner-ribbon bottom-right"></div>
+    <div class="outer-border"></div>
+    <div class="inner-border"></div>
+
+    <div class="content-box">
+        <div class="header-section">
+            <img src="https://www.ediusworld.com/wp/wp-content/uploads/2023/09/EDIUS-11_256.png" crossorigin="anonymous" class="edius-brand">
+            <div class="studio-brand">Studio Line India</div>
+        </div>
+
+        <h1 class="title-main">CERTIFICATE</h1>
+        <div class="title-sub">OFFICIAL SOFTWARE LICENSE AUTHORITY</div>
+
+        <p style="font-style: italic; color: #555; font-size: 16px; margin: 0;">This document confirms that</p>
+        <div class="name-display" id="outName">Customer Name</div>
+
+        <p class="description-text">
+            Has successfully acquired and registered a genuine license for <b><span id="outVer">EDIUS 11 Pro</span></b>. 
+            This software is verified to be authentic and registered under the official user database of 
+            <b>Studio Line India</b>, providing access to all professional features and official support.
+        </p>
+
+        <div class="user-seal-wrapper">
+            <img id="display-user-logo" src="https://www.ediusworld.com/wp/wp-content/uploads/2023/09/EDIUS-11_256.png" alt="Seal">
+            <div class="seal-label">EDIUS 11 LICENSE USER</div>
+        </div>
+
+        <div class="footer-meta-container">
+            <div class="meta-box">
+                <b>Authorized Reseller:</b><br>
+                Studio Line India | support@studiolineindia.com<br>
+                www.studiolineindia.com | +91 9735216364
+            </div>
+            <div class="meta-box" style="text-align: right;">
+                <b>Registry Details:</b><br>
+                Verified ID: <span id="outIDType">---</span><br>
+                Contact: <span id="outContact">---</span> | Date: <span id="outDate">---</span><br>
+                <span id="outKeyDisplay" style="font-weight:bold; color:var(--deep-red);">KEY: XXXX-XXXX</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="db-wrap">
+    <h3>ISSUED DATABASE (FIREBASE)</h3>
+    <table>
+        <thead><tr><th>Name</th><th>Key</th><th>Contact</th><th>Action</th></tr></thead>
+        <tbody id="dbRows"></tbody>
+    </table>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzsEtdbMP-bsTSQ7R6nbn5xyTddreRe2Q",
+  authDomain: "edius-certificate.firebaseapp.com",
+  projectId: "edius-certificate",
+  storageBucket: "edius-certificate.firebasestorage.app",
+  messagingSenderId: "93191357980",
+  appId: "1:93191357980:web:d53865237205c03e2801d9",
+  measurementId: "G-Y8RN5XTEBK"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let allCertificates = [];
+let selectedLogoBase64 = localStorage.getItem('saved_logo_v1') || "";
+
+if(selectedLogoBase64) {
+    document.getElementById('display-user-logo').src = selectedLogoBase64;
+}
+
+window.previewLogo = function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            selectedLogoBase64 = reader.result;
+            localStorage.setItem('saved_logo_v1', selectedLogoBase64);
+            document.getElementById('display-user-logo').src = reader.result;
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+window.makeCert = function() {
+    const data = {
+        name: document.getElementById('inName').value,
+        contact: document.getElementById('inContact').value,
+        idType: document.getElementById('inIDType').value,
+        ver: document.getElementById('edVer').value,
+        key: document.getElementById('inKey').value,
+        date: document.getElementById('inDate').value,
+        logo: selectedLogoBase64
+    };
+
+    if(!data.name || !data.key) return alert("Name and Key are mandatory!");
+
+    const certRef = ref(db, 'certificates');
+    const newCertRef = push(certRef);
+    set(newCertRef, data).then(() => {
+        alert("Saved to Online Database!");
+        showOnCanvas(data);
+    }).catch(err => alert("Error: " + err.message));
+}
+
+function showOnCanvas(item) {
+    document.getElementById('outName').innerText = item.name;
+    document.getElementById('outVer').innerText = item.ver;
+    document.getElementById('outIDType').innerText = item.idType;
+    document.getElementById('outContact').innerText = item.contact;
+    document.getElementById('outDate').innerText = item.date;
+    document.getElementById('outKeyDisplay').innerText = "REDEEM CODE : " + item.key;
+    
+    if(item.logo) {
+        document.getElementById('display-user-logo').src = item.logo;
+    }
+    
+    document.getElementById('cert-canvas').style.display = 'block';
+    document.getElementById('dlBtn').style.display = 'block';
+}
+
+const certsRef = ref(db, 'certificates');
+onValue(certsRef, (snapshot) => {
+    const data = snapshot.val();
+    const rows = document.getElementById('dbRows');
+    rows.innerHTML = "";
+    allCertificates = [];
+
+    if (data) {
+        Object.keys(data).forEach(key => {
+            const item = data[key];
+            allCertificates.push(item);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.name}</td>
+                <td>${item.key}</td>
+                <td>${item.contact}</td>
+                <td><button onclick="viewFromDB('${item.key}')">View</button></td>
+            `;
+            rows.appendChild(tr);
+        });
+    }
+});
+
+window.viewFromDB = function(key) {
+    const item = allCertificates.find(c => c.key === key);
+    if(item) showOnCanvas(item);
+}
+
+window.savePDF = function() {
+    const element = document.getElementById('cert-canvas');
+    const name = document.getElementById('outName').innerText;
+    
+    // PDF জেনারেশনের সময় মার্জিন এবং স্কেল ফিক্স করা হয়েছে
+    const opt = {
+        margin: 0,
+        filename: `EDIUS_Cert_${name}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            scrollY: 0,
+            scrollX: 0
+        },
+        jsPDF: { unit: 'px', format: [1000, 700], orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
+</script>
+
+</body>
+</html>
