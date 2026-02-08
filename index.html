@@ -15,6 +15,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
+
+.icon-btn.edit:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6; /* ব্লু কালার */
+    border-color: #3b82f6;
+}
+
+
+
+
+/* Modal Animation */
+@keyframes modalSlide {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-content {
+    animation: modalSlide 0.3s ease-out;
+}
+
         /* --- TRUE DARK / CARBON THEME --- */
         :root {
             --bg-body: #050505;       /* Ultra Dark */
@@ -207,9 +227,106 @@
         #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; }
         .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+
+
+
+
+/* --- TABLE DARK UI --- */
+.table-wrapper {
+    background: #0a0a0a !important; /* একদম গাঢ় কালো */
+    border: 1px solid #1f1f1f;
+}
+
+table {
+    background-color: #0a0a0a;
+}
+
+th {
+    background: #141414 !important; /* হেডার আরও ডার্ক */
+    color: var(--primary) !important;
+    border-bottom: 2px solid #1f1f1f;
+}
+
+td {
+    border-bottom: 1px solid #141414 !important;
+    background: transparent;
+    color: #e5e5e5;
+}
+
+/* মাউস নিলে রো হাইলাইট হবে */
+tr:hover td {
+    background: #111111 !important;
+}
+
+/* ইনপুট ফিল্ড এবং কার্ড ডার্ক করা */
+.dark-card, .entry-container {
+    background: #0d0d0d !important;
+    border: 1px solid #1f1f1f !important;
+}
+
+body {
+    background-color: #050505 !important; /* পুরো বডি আরও ডার্ক */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
 </head>
 <body>
+
+
+
+
+
+
+<div id="catModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; backdrop-filter:blur(8px);">
+    <div class="modal-content" style="background:var(--bg-card); width:95%; max-width:900px; margin:40px auto; border-radius:16px; border:1px solid var(--border); overflow:hidden;">
+        <div style="padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#171717;">
+            <h3 id="modalCatName" style="margin:0; font-family:'Space Grotesk'; color:var(--primary); font-size:24px;">Category Payments</h3>
+            <i class="fa-solid fa-circle-xmark" onclick="closeModal()" style="cursor:pointer; font-size:24px; color:var(--text-muted); transition:0.2s;"></i>
+        </div>
+        <div style="padding:0; max-height:70vh; overflow-y:auto;">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead style="position:sticky; top:0; background:#1f1f1f; z-index:10;">
+                    <tr>
+                        <th style="padding:15px; color:var(--primary); font-size:11px; text-transform:uppercase; text-align:left;">Date</th>
+                        <th style="padding:15px; color:var(--primary); font-size:11px; text-transform:uppercase; text-align:left;">Purpose</th>
+                        <th style="padding:15px; color:var(--primary); font-size:11px; text-transform:uppercase; text-align:left;">Mode</th>
+                        <th style="padding:15px; color:var(--primary); font-size:11px; text-transform:uppercase; text-align:right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="modalTableBody"></tbody>
+            </table>
+        </div>
+        <div style="padding:20px; background:#171717; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:var(--text-muted); font-size:14px;">Total Transactions: <span id="modalCount" style="color:#fff;">0</span></span>
+            <h3 id="modalTotalAmount" style="margin:0; font-family:'Space Grotesk'; color:var(--success);">Total: ₹0</h3>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
 
 <div id="loading"><div class="spinner"></div></div>
 
@@ -405,6 +522,78 @@
 </div>
 
 <script>
+
+
+
+
+
+// আপনার ফাইলে থাকা switchTab ফাংশনটি দেখতে অনেকটা এইরকম:
+    window.switchTab = (tab, el) => {
+        document.querySelectorAll('.view-section').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+        document.getElementById('view-'+tab).classList.add('active');
+        el.classList.add('active');
+        const titles = { 'dashboard': 'Investment Dashboard', 'expenses': 'Expense List', 'agreements': 'Agreements & Tools', 'admin': 'Admin Console' };
+        document.getElementById('pageTitle').innerText = titles[tab];
+    };
+
+    // --- এইখান থেকে কপি করে পেস্ট করা শুরু করুন ---
+
+   // ২. মোডাল ওপেন করে ডেটা দেখানোর লজিক
+window.showCategoryModal = (catName) => {
+    const modal = document.getElementById('catModal');
+    const tbody = document.getElementById('modalTableBody');
+    const modalTitle = document.getElementById('modalCatName');
+    const modalTotal = document.getElementById('modalTotalAmount');
+    const modalCount = document.getElementById('modalCount');
+    
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-muted);">লোড হচ্ছে...</td></tr>';
+    modal.style.display = 'block';
+
+    // সরাসরি ফায়ারবেস থেকে ফ্রেশ ডেটা নেওয়া
+    expensesRef.once('value').then(snap => {
+        const data = snap.val();
+        tbody.innerHTML = ''; 
+        let categoryTotal = 0;
+        let count = 0;
+
+        if (data) {
+            const entries = Object.entries(data).reverse();
+            entries.forEach(([key, item]) => {
+                // ক্যাটাগরি নাম নিখুঁতভাবে চেক করা
+                if (item.category.trim() === catName.trim()) {
+                    count++;
+                    categoryTotal += item.amount;
+                    const dateFormatted = item.date ? item.date.split('-').reverse().join('/') : '--/--/--';
+                    
+                    tbody.innerHTML += `
+                        <tr style="border-bottom:1px solid #111; transition:0.2s;">
+                            <td style="padding:15px; font-size:14px; color:#888;">${dateFormatted}</td>
+                            <td style="padding:15px; font-size:14px; color:#fff;">${item.purpose}</td>
+                            <td style="padding:15px;"><span class="badge ${item.payType === 'Cash' ? 'badge-cash' : 'badge-online'}">${item.payType}</span></td>
+                            <td style="padding:15px; font-weight:700; color:#fff; text-align:right;">₹${item.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+        
+        if(count === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:#555;">কোনো ডেটা পাওয়া যায়নি।</td></tr>';
+        }
+
+        modalTitle.innerText = catName;
+        modalCount.innerText = count;
+        modalTotal.innerText = "Total পেমেন্ট: ₹" + categoryTotal.toLocaleString();
+    });
+};
+
+window.closeModal = () => {
+    document.getElementById('catModal').style.display = 'none';
+};
+
+
+
     const firebaseConfig = {
       apiKey: "AIzaSyAAeyg-BywMlATzy-mjri-oPJ0jiWzySsg",
       authDomain: "my-dream-home-2c1bb.firebaseapp.com",
@@ -620,46 +809,71 @@
         }
     };
 
-    function processData(data) {
-        let spent = 0, lastEntry = 0;
-        let monthlyData = new Array(12).fill(0);
-        let catTotals = {};
-        categories.forEach(c => catTotals[c.name] = 0);
+function processData(data) {
+    let spent = 0, lastEntry = 0;
+    let monthlyData = new Array(12).fill(0);
+    let catTotals = {};
+    
+    // ক্যাটাগরিগুলো আগে থেকে ০ করে রাখা
+    categories.forEach(c => catTotals[c.name] = 0);
 
-        const dBody = document.querySelector('#dashboardTable tbody');
-        const fBody = document.querySelector('#fullTable tbody');
-        dBody.innerHTML = ''; fBody.innerHTML = '';
+    const dBody = document.querySelector('#dashboardTable tbody');
+    const fBody = document.querySelector('#fullTable tbody');
+    
+    // টেবিল পরিষ্কার করা
+    if(dBody) dBody.innerHTML = ''; 
+    if(fBody) fBody.innerHTML = '';
 
-        if(data) {
-            const arr = Object.entries(data).reverse();
-            arr.forEach(([key, item]) => {
-                spent += item.amount;
-                lastEntry = arr[0][1].amount;
-                if(catTotals[item.category] !== undefined) catTotals[item.category] += item.amount;
-                else catTotals[item.category] = item.amount;
+    if(data) {
+        const arr = Object.entries(data).reverse();
+        arr.forEach(([key, item]) => {
+            spent += item.amount;
+            lastEntry = arr[0][1].amount;
+            
+            if(catTotals[item.category] !== undefined) catTotals[item.category] += item.amount;
+            else catTotals[item.category] = item.amount;
 
-                const d = new Date(item.date);
-                if(!isNaN(d)) monthlyData[d.getMonth()] += item.amount;
+            const d = new Date(item.date);
+            if(!isNaN(d)) monthlyData[d.getMonth()] += item.amount;
 
-                const dateParts = item.date.split('-');
-                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            const dateParts = item.date.split('-');
+            const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
 
-                const row = `
-                    <td>${formattedDate}</td>
-                    <td><strong>${item.purpose}</strong><br><small style="color:#a1a1aa">${item.contact || '--'}</small></td>
-                    <td>${item.category}</td>
-                    <td><span class="badge ${item.payType === 'Cash' ? 'badge-cash' : 'badge-online'}">${item.payType}</span></td>
-                    <td style="font-weight:700; color:#fff">₹${item.amount.toLocaleString()}</td>
-                `;
-                if(dBody.rows.length < 5) dBody.innerHTML += `<tr>${row}</tr>`;
-                fBody.innerHTML += `<tr>${row}<td><i class="fa-solid fa-trash icon-btn trash" onclick="deleteItem('${key}')"></i></td></tr>`;
-            });
-        }
-        updateUI(spent, lastEntry);
-        renderCategoryCards(catTotals);
-        myChart.data.datasets[0].data = monthlyData;
-        myChart.update();
+            // ড্যাশবোর্ড এবং ফুল লিস্ট টেবিলের জন্য রো (Row) তৈরি
+            const rowHtml = `
+                <td>${formattedDate}</td>
+                <td><strong>${item.purpose}</strong></td>
+                <td><small style="color:#a1a1aa">${item.contact || '--'}</small></td>
+                <td>${item.category}</td>
+                <td><span class="badge ${item.payType === 'Cash' ? 'badge-cash' : 'badge-online'}">${item.payType}</span></td>
+                <td style="font-weight:700; color:#fff">₹${item.amount.toLocaleString()}</td>
+            `;
+
+            // ড্যাশবোর্ডে শুধু ৫টি দেখাবে
+            if(dBody && dBody.rows.length < 5) {
+                dBody.innerHTML += `<tr>${rowHtml}</tr>`;
+            }
+
+// ফুল লিস্টে এডিট এবং ডিলিট বাটন যোগ করা
+if(fBody) {
+    fBody.innerHTML += `
+        <tr>
+            ${rowHtml}
+            <td>
+                <div class="action-btns">
+                    <i class="fa-solid fa-pen-to-square icon-btn edit" onclick="editItem('${key}')" title="Edit"></i>
+                    <i class="fa-solid fa-trash icon-btn trash" onclick="deleteItem('${key}')" title="Delete"></i>
+                </div>
+            </td>
+        </tr>`;
+}
+        });
     }
+    updateUI(spent, lastEntry);
+    renderCategoryCards(catTotals);
+    myChart.data.datasets[0].data = monthlyData;
+    myChart.update();
+}
 
     function updateUI(spent, lastEntry = 0) {
         document.getElementById('uiTotalBudget').innerText = "₹" + (totalBudget/100000).toFixed(1) + "L";
@@ -695,19 +909,55 @@
         autoFillMobile();
     }
 
-    function renderCategoryCards(totals) {
-        const grid = document.getElementById('categoryGrid');
-        grid.innerHTML = '';
-        categories.forEach((c, index) => {
-            const color = cardColors[index % cardColors.length];
-            grid.innerHTML += `
-                <div class="cat-card" style="border-top: 3px solid ${color}; background: linear-gradient(180deg, ${color}10, transparent);">
-                    <h5 style="color:${color}">${c.name}</h5>
-                    <div class="cat-val">₹${(totals[c.name]||0).toLocaleString()}</div>
-                </div>
-            `;
-        });
+// ১. কার্ড রেন্ডার করার সময় 'onclick' ইভেন্ট যোগ করা
+function renderCategoryCards(totals) {
+    const grid = document.getElementById('categoryGrid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    
+    categories.forEach((c, index) => {
+        const color = cardColors[index % cardColors.length];
+        const amount = totals[c.name] || 0;
+        
+        // এখানে onclick="showCategoryModal('${c.name}')" নিশ্চিত করা হয়েছে
+        grid.innerHTML += `
+            <div class="cat-card" 
+                 onclick="showCategoryModal('${c.name}')"
+                 style="border-top: 3px solid ${color}; cursor: pointer; background: linear-gradient(180deg, ${color}10, transparent);">
+                <h5 style="color:${color}">${c.name}</h5>
+                <div class="cat-val">₹${amount.toLocaleString()}</div>
+                <small style="color:var(--text-muted); font-size:10px;">বিস্তারিত দেখতে ক্লিক করুন</small>
+            </div>
+        `;
+    });
+}
+
+// Category filter korar function
+window.filterByCategory = (catName) => {
+    // Prothome 'Expense List' tab e switch korbe
+    switchTab('expenses', document.querySelector('.nav-item:nth-child(3)'));
+    
+    const fBody = document.querySelector('#fullTable tbody');
+    const rows = fBody.querySelectorAll('tr');
+    let found = false;
+
+    rows.forEach(row => {
+        const categoryCell = row.cells[3].innerText; // Category column index 3
+        if (categoryCell === catName) {
+            row.style.display = ''; // Show
+            row.style.backgroundColor = 'rgba(245, 158, 11, 0.05)'; // Highlight
+            found = true;
+        } else {
+            row.style.display = 'none'; // Hide others
+        }
+    });
+
+    // Ekta 'Show All' button add kora jate filter clear kora jay
+    if (found) {
+        document.getElementById('pageTitle').innerText = "Filter: " + catName;
+        alert(catName + "-er sob payment list 'Expense List' tab-e filter kora hoyeche.");
     }
+};
 
     window.autoFillMobile = () => {
         const selectedName = document.getElementById('categorySelect').value;
@@ -754,11 +1004,98 @@
         document.getElementById('amount').value = '';
     };
 
-    window.deleteItem = (key) => { if(confirm("Delete?")) db.ref('expenses/'+key).remove(); };
-    window.updateBudget = () => {
-        const val = parseFloat(document.getElementById('adminBudgetInput').value);
-        if(val) { settingsRef.update({ budget: val }); alert("Saved!"); }
+
+
+
+
+
+
+window.editItem = (key) => {
+    const pass = prompt("এডিট করতে পাসওয়ার্ড দিন:");
+    if (pass === "Manas@4321") {
+        // ফায়ারবেস থেকে ওই নির্দিষ্ট ডেটা আনা
+        expensesRef.child(key).once('value', snap => {
+            const item = snap.val();
+            if (item) {
+                // ফর্মের ইনপুট ফিল্ডগুলোতে ডেটা বসানো
+                document.getElementById('purpose').value = item.purpose;
+                document.getElementById('amount').value = item.amount;
+                document.getElementById('contact').value = item.contact || '';
+                document.getElementById('payType').value = item.payType;
+                document.getElementById('categorySelect').value = item.category;
+                document.getElementById('date').value = item.date;
+
+                // সেভ বাটনকে আপডেট বাটনে রূপান্তর করা
+                const saveBtn = document.querySelector('.btn-gold');
+                saveBtn.innerText = "Update Record";
+                saveBtn.onclick = () => updateData(key);
+                
+                // স্ক্রল করে ফর্মে নিয়ে যাওয়া
+                document.querySelector('.entry-container').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    } else {
+        alert("❌ ভুল পাসওয়ার্ড!");
+    }
+};
+
+// আপডেট করা ডেটা সেভ করার ফাংশন
+window.updateData = (key) => {
+    const updatedData = {
+        purpose: document.getElementById('purpose').value,
+        amount: parseFloat(document.getElementById('amount').value),
+        contact: document.getElementById('contact').value,
+        payType: document.getElementById('payType').value,
+        category: document.getElementById('categorySelect').value,
+        date: document.getElementById('date').value
     };
+
+    expensesRef.child(key).update(updatedData).then(() => {
+        alert("রেকর্ড আপডেট করা হয়েছে!");
+        location.reload(); // পেজ রিফ্রেশ করে বাটন রিসেট করা
+    });
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// পাসওয়ার্ড প্রোটেক্টেড ডিলিট ফাংশন
+window.deleteItem = (key) => {
+    // ইউজার থেকে পাসওয়ার্ড চাওয়া হচ্ছে
+    const passwordInput = prompt("এই রেকর্ডটি ডিলিট করতে পাসওয়ার্ড দিন:");
+
+    // পাসওয়ার্ড চেক করা হচ্ছে
+    if (passwordInput === "Manas@4321") {
+        const doubleCheck = confirm("আপনি কি নিশ্চিত যে এই রেকর্ডটি ডিলিট করতে চান?");
+        if (doubleCheck) {
+            // সঠিক পাসওয়ার্ড হলে ফায়ারবেস থেকে ডিলিট হবে
+            expensesRef.child(key).remove()
+                .then(() => {
+                    alert("রেকর্ডটি সফলভাবে ডিলিট করা হয়েছে।");
+                })
+                .catch((error) => {
+                    alert("ডিলিট করতে সমস্যা হয়েছে: " + error.message);
+                });
+        }
+    } else if (passwordInput === null) {
+        // ইউজার যদি 'Cancel' ক্লিক করে
+        return;
+    } else {
+        // ভুল পাসওয়ার্ড দিলে
+        alert("❌ ভুল পাসওয়ার্ড! আপনি এই রেকর্ডটি ডিলিট করতে পারবেন না।");
+    }
+};
+
     window.updateDefaultMobile = () => {
         const val = document.getElementById('adminMobileInput').value;
         if(val) { settingsRef.update({ defaultMobile: val }); alert("Saved!"); }
