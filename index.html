@@ -314,7 +314,7 @@ body {
         </div>
         <div style="padding:20px; background:#171717; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
             <span style="color:var(--text-muted); font-size:14px;">Total Transactions: <span id="modalCount" style="color:#fff;">0</span></span>
-            <h3 id="modalTotalAmount" style="margin:0; font-family:'Space Grotesk'; color:var(--success);">Total: ₹0</h3>
+            <h3 id="modalTotalAmount" style="margin:0; font-family:'Space Grotesk'; color:var(--primary);">Total: ₹0</h3>
         </div>
     </div>
 </div>
@@ -584,7 +584,7 @@ window.showCategoryModal = (catName) => {
 
         modalTitle.innerText = catName;
         modalCount.innerText = count;
-        modalTotal.innerText = "Total পেমেন্ট: ₹" + categoryTotal.toLocaleString();
+        modalTotal.innerText = "Total Payment : " + categoryTotal.toLocaleString();
     });
 };
 
@@ -1121,3 +1121,4 @@ window.deleteItem = (key) => {
 
 </body>
 </html>
+
