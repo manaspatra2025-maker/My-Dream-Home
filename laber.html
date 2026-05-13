@@ -364,18 +364,37 @@
 </head>
 <body>
 
-    <aside class="sidebar">
+<aside class="sidebar">
         <div class="brand">
             <i class="fa-solid fa-cube"></i>
             <span>WorkSuite<span style="font-weight:300">PRO</span></span>
         </div>
+        
         <ul class="nav-menu">
-            <li class="nav-item active" onclick="nav('dashboard', this)"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
-            <li class="nav-item" onclick="nav('weekly', this)"><i class="fa-solid fa-calendar-days"></i> Weekly History</li>
-            <li class="nav-item" onclick="nav('settlements', this)"><i class="fa-solid fa-receipt"></i> Settlements</li>
-            <li class="nav-item" onclick="nav('settings', this)"><i class="fa-solid fa-sliders"></i> Settings</li>
+            <li class="nav-item active" onclick="nav('dashboard', this)">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </li>
+            <li class="nav-item" onclick="nav('weekly', this)">
+                <i class="fa-solid fa-calendar-days"></i> Weekly History
+            </li>
+            <li class="nav-item" onclick="nav('settlements', this)">
+                <i class="fa-solid fa-receipt"></i> Settlements
+            </li>
+            <li class="nav-item" onclick="nav('settings', this)">
+                <i class="fa-solid fa-sliders"></i> Settings
+            </li>
         </ul>
-        <div style="padding: 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">
+
+        <!-- Go Back Button (Enterprise version ke upar) -->
+        <div style="margin-top: auto; padding-bottom: 5px;">
+            <a href="https://manaspatra2025-maker.github.io/My-Dream-Home/" style="text-decoration: none;">
+                <div class="nav-item" style="color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.1); background: rgba(244, 63, 94, 0.05); margin-bottom: 15px;">
+                    <i class="fa-solid fa-arrow-left-long"></i> Go Back
+                </div>
+            </a>
+        </div>
+
+        <div style="padding: 20px 0; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">
             V2.0 ENTERPRISE
         </div>
     </aside>
